@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getStarterPackById } from '../services/api';
+import { getStarterPackById, StarterPack } from '../services/api';
 import { saveStarterPack, removeStarterPack, isPackSaved } from '../services/storage';
 import UserList from './UserList';
 
 const StarterPackDetail = () => {
   const { id } = useParams();
-  const [pack, setPack] = useState(null);
+  const [pack, setPack] = useState<StarterPack | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -17,7 +17,9 @@ const StarterPackDetail = () => {
         setLoading(true);
         const response = await getStarterPackById(id);
         setPack(response.result.starterpack);
-        setSaved(isPackSaved(id));
+        if (id) {
+          setSaved(isPackSaved(id));
+        }
       } catch (err) {
         setError('Failed to load starter pack');
         console.error(err);
@@ -32,6 +34,8 @@ const StarterPackDetail = () => {
   }, [id]);
 
   const handleSaveToggle = () => {
+    if (!pack) return;
+    
     if (saved) {
       removeStarterPack(pack.id);
       setSaved(false);
@@ -55,11 +59,15 @@ const StarterPackDetail = () => {
       </button>
 
       <div className="members-count">
-        {pack.members.length} members
+        {pack.members && pack.members.length ? `${pack.members.length} members` : 'No members'}
       </div>
 
       <h2>Members</h2>
-      <UserList userIds={pack.members.map(member => member.fid)} />
+      {pack.members && pack.members.length > 0 ? (
+        <UserList userIds={pack.members.map(member => member.fid)} />
+      ) : (
+        <div>No members in this pack</div>
+      )}
     </div>
   );
 };

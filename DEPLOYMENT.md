@@ -1,22 +1,44 @@
-# Deployment Guide for Starter Pack Explorer
+# Deployment Guide for Starter Pack Feed App
 
-This guide outlines how to deploy this mini-app to production with proper API handling.
+This guide outlines how to deploy this mini-app to Vercel with KV database integration for cross-device storage.
 
 ## Development Setup
 
 The app is configured to handle API requests in different environments:
 
-1. **Local development** (http://localhost:5173): Uses Vite's proxy to handle CORS
-2. **Cloudflare tunnel** (https://xxx.trycloudflare.com): Uses mock data during development
-3. **Production** (your domain): Will use your API proxy implementation
+1. **Local development** (http://localhost:5173): Uses localStorage for starter pack storage
+2. **Production** (your Vercel domain): Uses Vercel KV for persistent cross-device storage
 
 ```bash
 # Start development server
 pnpm dev
-
-# In a separate terminal, start Cloudflare tunnel
-cloudflared tunnel --url http://localhost:5173
 ```
+
+## Vercel Deployment Process
+
+Follow these steps to deploy the app to Vercel with KV database integration:
+
+1. **Create a Vercel Project**
+   - Go to [Vercel Dashboard](https://vercel.com/dashboard)
+   - Click "Add New" > "Project"
+   - Import your GitHub repository
+   - Configure the project with these settings:
+     - Framework Preset: Vite
+     - Build Command: `pnpm build`
+     - Output Directory: `dist`
+     - Install Command: `pnpm install`
+
+2. **Set Up Vercel KV Database**
+   - After the initial deployment, go to the project's "Storage" tab
+   - Click "Connect" next to "Vercel KV"
+   - Follow the steps to create a new KV database (Redis)
+   - Once created, Vercel will automatically add environment variables to your project:
+     - `KV_REST_API_URL`
+     - `KV_REST_API_TOKEN`
+
+3. **Redeploy the Project**
+   - After setting up the KV database, trigger a new deployment
+   - Vercel will include the environment variables for KV access
 
 ## Frame SDK Authentication
 
@@ -142,23 +164,54 @@ app.listen(PORT, () => {
 
 ## Farcaster Manifest Update
 
-Update your `farcaster.json` with your production domain:
+Update your `farcaster.json` with your Vercel production domain:
 
 ```json
 {
   "frame": {
     "version": "1",
-    "name": "Starter Pack Explorer",
-    "iconUrl": "https://yourdomain.com/icon.png",
-    "homeUrl": "https://yourdomain.com/",
-    "imageUrl": "https://yourdomain.com/cover.png",
-    "buttonTitle": "Explore Packs",
-    "splashImageUrl": "https://yourdomain.com/splash.png",
+    "name": "Starter Pack Feed",
+    "iconUrl": "https://your-vercel-domain.vercel.app/icon.png",
+    "homeUrl": "https://your-vercel-domain.vercel.app/",
+    "imageUrl": "https://your-vercel-domain.vercel.app/cover.png",
+    "buttonTitle": "View Packs",
+    "splashImageUrl": "https://your-vercel-domain.vercel.app/splash.png",
     "splashBackgroundColor": "#5c6bc0"
   }
 }
 ```
 
-## Updating API Service for Production
+## Troubleshooting
 
-When deploying to production, the API service will continue to work as configured. The proxy URL pattern will remain the same, but it will be handled by your production proxy instead of the development server.
+### CORS Issues
+The API routes in this project are serverless functions that run on Vercel. If you encounter CORS issues:
+
+1. Make sure your client-side API calls use relative paths that will be correctly routed to your serverless functions:
+   ```javascript
+   // Good - relative path
+   fetch('/api/starter-packs?fid=123')
+   
+   // Bad - absolute path to your domain
+   fetch('https://your-domain.com/api/starter-packs?fid=123')
+   ```
+
+2. If needed, you can add CORS headers to your serverless functions:
+   ```javascript
+   // In api/starter-packs.js
+   res.setHeader('Access-Control-Allow-Origin', '*');
+   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+   
+   // Handle OPTIONS requests
+   if (req.method === 'OPTIONS') {
+     return res.status(200).end();
+   }
+   ```
+
+### Vercel KV Connection Issues
+If the app falls back to localStorage despite being deployed to Vercel:
+
+1. Verify that the KV database is properly connected in the Vercel dashboard
+2. Check that environment variables are correctly set
+3. Verify that the serverless function has proper permissions to access the KV database
+4. Check the function logs in the Vercel dashboard for error messages

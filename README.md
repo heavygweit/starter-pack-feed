@@ -1,13 +1,14 @@
-# Starter Pack Explorer
+# Starter Pack Feed
 
-A Farcaster mini app for exploring and following starter packs.
+A Farcaster mini app for collecting and managing Warpcast starter packs.
 
 ## Features
 
 - Paste Warpcast starter pack URLs to save them
-- View your saved starter packs
-- Remove saved packs
-- View specific starter pack details
+- View your saved starter packs across devices
+- Remove saved packs from your collection
+- View detailed information about each starter pack
+- Cross-device persistence with Vercel KV
 
 ## Development Setup
 
@@ -35,16 +36,18 @@ These endpoints don't require authentication and can be called directly from the
 1. **Adding Starter Packs**:
    - Users paste a Warpcast starter pack URL (e.g., https://warpcast.com/erica/pack/gaycoinz-db07ti)
    - The app extracts the pack ID and creator from the URL
-   - The pack is saved to local storage
+   - The pack is saved to Vercel KV using the user's Farcaster ID as the key
+   - If Vercel KV is unavailable, falls back to localStorage
 
 2. **Viewing Starter Packs**:
-   - The app loads saved packs from local storage
+   - The app loads saved packs from Vercel KV based on the user's FID
    - Clicking on a pack takes users to its detail page
+   - Packs are synchronized across all user devices via Vercel KV
 
 3. **Pack Details**:
    - The app fetches pack data from the Warpcast API
    - Displays pack information and members list
-   - The feed implementation will be added in a future update
+   - Users can easily add or remove packs from their collection
 
 ## Cloudflare Tunnel for Testing
 
@@ -59,34 +62,25 @@ cloudflared tunnel --url http://localhost:5173
 
 This app is designed to be deployed on Vercel with Vercel KV for cross-device data persistence.
 
-### Prerequisites
+For detailed instructions on deployment, see the [DEPLOYMENT.md](./DEPLOYMENT.md) file.
 
-1. Install the Vercel CLI:
-```bash
-npm install -g vercel
-```
+### Quick Deployment Steps
 
-2. Login to Vercel:
-```bash
-vercel login
-```
-
-### Deploy
-
-1. Deploy to Vercel:
-```bash
-vercel
-```
-
-2. During deployment, Vercel will ask to create a new KV database. Confirm to create one.
-
-3. Once deployed, your app will be available at a Vercel-generated URL.
+1. Push your repository to GitHub
+2. Import the repository in the Vercel dashboard
+3. Configure with the following settings:
+   - Framework: Vite
+   - Build Command: `pnpm build`
+   - Output Directory: `dist`
+   - Install Command: `pnpm install`
+4. After initial deployment, set up Vercel KV from the Storage tab
+5. Redeploy to apply the KV database configuration
 
 ### Environment Variables
 
-The following environment variables need to be set in your Vercel project:
-- `KV_REST_API_URL`: Automatically set by Vercel when creating a KV database
-- `KV_REST_API_TOKEN`: Automatically set by Vercel when creating a KV database
+The following environment variables are automatically set by Vercel when creating a KV database:
+- `KV_REST_API_URL`: URL endpoint for the Vercel KV REST API
+- `KV_REST_API_TOKEN`: Authentication token for the Vercel KV REST API
 
 ### Cross-Device Data Persistence
 

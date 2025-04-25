@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getSavedPacks } from '../services/storage';
 import StarterPackCard from './StarterPackCard';
+import { StarterPack } from '../services/api';
 
 const SavedPacksList = () => {
-  const [savedPacks, setSavedPacks] = useState([]);
+  const [savedPacks, setSavedPacks] = useState<StarterPack[]>([]);
 
   useEffect(() => {
     const packs = getSavedPacks();

@@ -1,6 +1,26 @@
 // src/services/api.ts
 import { sdk } from '@farcaster/frame-sdk';
 
+// Types
+export interface StarterPack {
+  id: string;
+  url: string;
+  name?: string;
+  creator?: string;
+  description?: string;
+  members?: Array<{ fid: number }>;
+}
+
+export interface User {
+  fid: number;
+  username: string;
+  displayName: string;
+  pfp: { url: string };
+  bio?: string;
+  followerCount?: number;
+  followingCount?: number;
+}
+
 // Extract starter pack ID from a Warpcast URL
 export const extractPackIdFromUrl = (url: string): string | null => {
   try {
@@ -47,6 +67,46 @@ export const fetchUserProfile = async (username: string) => {
     return response.json();
   } catch (error) {
     console.error(`Failed to fetch user profile for ${username}:`, error);
+    throw error;
+  }
+};
+
+// Get a starter pack by ID - combines data fetching and parsing
+export const getStarterPackById = async (id: string | undefined): Promise<any> => {
+  if (!id) throw new Error('Pack ID is required');
+  const data = await fetchStarterPackData(id);
+  return {
+    result: {
+      starterpack: {
+        id,
+        name: `Starter Pack ${id}`,
+        description: 'A collection of profiles to follow',
+        members: data.result.members || []
+      }
+    }
+  };
+};
+
+// Get user by FID
+export const getUserByFid = async (fid: number): Promise<any> => {
+  try {
+    // This is a mock implementation since the public API doesn't have a direct getFid endpoint
+    // In a real implementation, you would call the actual API
+    return {
+      result: {
+        user: {
+          fid,
+          username: `user_${fid}`,
+          displayName: `User ${fid}`,
+          pfp: { url: 'https://warpcast.com/~/default-avatar.png' },
+          bio: 'Farcaster user',
+          followerCount: 0,
+          followingCount: 0
+        }
+      }
+    };
+  } catch (error) {
+    console.error(`Failed to fetch user data for FID ${fid}:`, error);
     throw error;
   }
 };

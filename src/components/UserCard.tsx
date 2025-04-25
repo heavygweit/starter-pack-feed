@@ -1,7 +1,11 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
+import { User } from '../services/api';
 
-const UserCard = ({ user }) => {
+interface UserCardProps {
+  user: User;
+}
+
+const UserCard = ({ user }: UserCardProps) => {
   return (
     <Link to={`/user/${user.fid}`}>
       <div className="user-card">

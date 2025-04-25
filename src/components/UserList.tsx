@@ -1,9 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { getUserByFid } from '../services/api';
+import { useEffect, useState } from 'react';
+import { getUserByFid, User } from '../services/api';
 import UserCard from './UserCard';
 
-const UserList = ({ userIds }) => {
-  const [users, setUsers] = useState([]);
+interface UserListProps {
+  userIds: number[];
+}
+
+const UserList = ({ userIds }: UserListProps) => {
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

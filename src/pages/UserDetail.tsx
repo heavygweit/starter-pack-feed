@@ -1,19 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getUserByFid } from '../services/api';
+import { getUserByFid, User } from '../services/api';
 
 const UserDetail = () => {
   const { fid } = useParams();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         setLoading(true);
-        const response = await getUserByFid(Number(fid));
-        setUser(response.result.user);
+        if (fid) {
+          const response = await getUserByFid(Number(fid));
+          setUser(response.result.user);
+        }
       } catch (err) {
         setError('Failed to load user');
         console.error(err);
@@ -39,7 +41,7 @@ const UserDetail = () => {
           <h1>{user.displayName}</h1>
           <div className="username">@{user.username}</div>
           {user.bio && <p className="bio">{user.bio}</p>}
-          {user.followerCount && (
+          {user.followerCount !== undefined && (
             <div className="stats">
               <span>{user.followerCount} followers</span>
               <span>{user.followingCount} following</span>
