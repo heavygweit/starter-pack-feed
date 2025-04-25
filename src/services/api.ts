@@ -57,8 +57,8 @@ const SAVED_PACKS_KEY = 'savedStarterPacks';
 // Get current user's FID for storage
 const getCurrentUserFid = async (): Promise<number | null> => {
   try {
-    const userFid = await getUserFid();
-    return userFid;
+    const context = await sdk.context;
+    return context.user?.fid || null;
   } catch (error) {
     console.error('Failed to get user FID:', error);
     return null;
