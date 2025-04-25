@@ -1,5 +1,5 @@
 // src/services/api.ts
-import { getUserFid } from './frame';
+import { getUserFid, waitForFrameInit, isFrameInitialized } from './frame';
 
 // Types
 export interface StarterPack {
@@ -115,8 +115,14 @@ export const getUserByFid = async (fid: number): Promise<any> => {
 const SAVED_PACKS_KEY = 'savedStarterPacks';
 
 // Get current user's FID for storage
-const getCurrentUserFid = (): number | null => {
+const getCurrentUserFid = async (): Promise<number | null> => {
   try {
+    // If frame is not initialized yet, wait for it
+    if (!isFrameInitialized()) {
+      console.log('Waiting for frame initialization...');
+      await waitForFrameInit();
+    }
+    
     // Get FID from window.userFid (set by initializeFrame)
     return getUserFid() || null;
   } catch (error) {
@@ -146,7 +152,7 @@ const getApiBaseUrl = () => {
 export const getSavedPacks = async () => {
   try {
     // Get user FID
-    const fid = getCurrentUserFid();
+    const fid = await getCurrentUserFid();
     
     if (!fid) {
       console.warn('No FID available, using localStorage fallback');
@@ -181,7 +187,7 @@ export const getSavedPacks = async () => {
 export const saveStarterPack = async (packInfo: { id: string, url: string, name?: string, creator?: string }) => {
   try {
     // Get user FID
-    const fid = getCurrentUserFid();
+    const fid = await getCurrentUserFid();
     
     if (!fid) {
       console.warn('No FID available, using localStorage fallback');
@@ -235,7 +241,7 @@ export const saveStarterPack = async (packInfo: { id: string, url: string, name?
 export const removeStarterPack = async (packId: string) => {
   try {
     // Get user FID
-    const fid = getCurrentUserFid();
+    const fid = await getCurrentUserFid();
     
     if (!fid) {
       console.warn('No FID available, using localStorage fallback');
