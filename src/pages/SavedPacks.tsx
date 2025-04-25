@@ -1,4 +1,3 @@
-import React from 'react';
 import SavedPacksList from '../components/SavedPacksList';
 
 const SavedPacks = () => {

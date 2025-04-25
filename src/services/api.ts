@@ -171,7 +171,7 @@ export const saveStarterPack = async (packInfo: { id: string, url: string, name?
       const savedPacks = await getSavedPacks();
       
       // Check if already saved
-      if (!savedPacks.find(p => p.id === packInfo.id)) {
+      if (!savedPacks.find((p: StarterPack) => p.id === packInfo.id)) {
         const updatedPacks = [...savedPacks, packInfo];
         localStorage.setItem(SAVED_PACKS_KEY, JSON.stringify(updatedPacks));
         return true;
@@ -200,7 +200,7 @@ export const saveStarterPack = async (packInfo: { id: string, url: string, name?
       const savedPacks = await getSavedPacks();
       
       // Check if already saved
-      if (!savedPacks.find(p => p.id === packInfo.id)) {
+      if (!savedPacks.find((p: StarterPack) => p.id === packInfo.id)) {
         const updatedPacks = [...savedPacks, packInfo];
         localStorage.setItem(SAVED_PACKS_KEY, JSON.stringify(updatedPacks));
         return true;
@@ -222,7 +222,7 @@ export const removeStarterPack = async (packId: string) => {
       console.warn('No FID available, using localStorage fallback');
       // Fallback to localStorage if no FID
       const savedPacks = await getSavedPacks();
-      const updatedPacks = savedPacks.filter(p => p.id !== packId);
+      const updatedPacks = savedPacks.filter((p: StarterPack) => p.id !== packId);
       localStorage.setItem(SAVED_PACKS_KEY, JSON.stringify(updatedPacks));
       return true;
     }
@@ -242,7 +242,7 @@ export const removeStarterPack = async (packId: string) => {
       console.error('Failed to remove from API, using localStorage fallback:', apiError);
       // Fallback to localStorage if API fails
       const savedPacks = await getSavedPacks();
-      const updatedPacks = savedPacks.filter(p => p.id !== packId);
+      const updatedPacks = savedPacks.filter((p: StarterPack) => p.id !== packId);
       localStorage.setItem(SAVED_PACKS_KEY, JSON.stringify(updatedPacks));
       return true;
     }
@@ -255,7 +255,7 @@ export const removeStarterPack = async (packId: string) => {
 export const isPackSaved = async (packId: string) => {
   try {
     const savedPacks = await getSavedPacks();
-    return savedPacks.some(p => p.id === packId);
+    return savedPacks.some((p: StarterPack) => p.id === packId);
   } catch (error) {
     console.error(`Failed to check if pack ${packId} is saved:`, error);
     return false;
