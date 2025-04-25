@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import StarterPackCard from './StarterPackCard';
-import { getSavedPacks } from '../services/api';
+import { getSavedPacks, StarterPack } from '../services/api';
 
 const StarterPackList: React.FC = () => {
-  const [savedPacks, setSavedPacks] = useState<any[]>([]);
+  const [savedPacks, setSavedPacks] = useState<StarterPack[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadSavedPacks = async () => {
