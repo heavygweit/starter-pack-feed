@@ -1,5 +1,5 @@
 // src/services/api.ts
-import { sdk } from '@farcaster/frame-sdk';
+import { getUserFid } from './frame';
 
 // Types
 export interface StarterPack {
@@ -115,21 +115,38 @@ export const getUserByFid = async (fid: number): Promise<any> => {
 const SAVED_PACKS_KEY = 'savedStarterPacks';
 
 // Get current user's FID for storage
-const getCurrentUserFid = async (): Promise<number | null> => {
+const getCurrentUserFid = (): number | null => {
   try {
-    const context = await sdk.context;
-    return context.user?.fid || null;
+    // Get FID from window.userFid (set by initializeFrame)
+    return getUserFid() || null;
   } catch (error) {
     console.error('Failed to get user FID:', error);
     return null;
   }
 };
 
+// Get API base URL (vercel deployment vs local dev)
+const getApiBaseUrl = () => {
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const isVercel = window.location.hostname.includes('vercel.app');
+  
+  if (isVercel || !isLocalhost) {
+    // We're in production or preview deployment
+    return '';
+  }
+  
+  // In development, specify the full URL if needed
+  // This is only needed if you're running Vercel Functions locally
+  // return 'http://localhost:3000';
+  
+  return '';
+};
+
 // Fetch saved packs from the API
 export const getSavedPacks = async () => {
   try {
     // Get user FID
-    const fid = await getCurrentUserFid();
+    const fid = getCurrentUserFid();
     
     if (!fid) {
       console.warn('No FID available, using localStorage fallback');
@@ -140,7 +157,8 @@ export const getSavedPacks = async () => {
     
     // Try to fetch from the API
     try {
-      const response = await fetch(`/api/starter-packs?fid=${fid}`);
+      const apiBaseUrl = getApiBaseUrl();
+      const response = await fetch(`${apiBaseUrl}/api/starter-packs?fid=${fid}`);
       
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
@@ -163,7 +181,7 @@ export const getSavedPacks = async () => {
 export const saveStarterPack = async (packInfo: { id: string, url: string, name?: string, creator?: string }) => {
   try {
     // Get user FID
-    const fid = await getCurrentUserFid();
+    const fid = getCurrentUserFid();
     
     if (!fid) {
       console.warn('No FID available, using localStorage fallback');
@@ -181,7 +199,8 @@ export const saveStarterPack = async (packInfo: { id: string, url: string, name?
     
     // Try to save to the API
     try {
-      const response = await fetch(`/api/starter-packs?fid=${fid}`, {
+      const apiBaseUrl = getApiBaseUrl();
+      const response = await fetch(`${apiBaseUrl}/api/starter-packs?fid=${fid}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -216,7 +235,7 @@ export const saveStarterPack = async (packInfo: { id: string, url: string, name?
 export const removeStarterPack = async (packId: string) => {
   try {
     // Get user FID
-    const fid = await getCurrentUserFid();
+    const fid = getCurrentUserFid();
     
     if (!fid) {
       console.warn('No FID available, using localStorage fallback');
@@ -229,7 +248,8 @@ export const removeStarterPack = async (packId: string) => {
     
     // Try to remove from the API
     try {
-      const response = await fetch(`/api/starter-packs?fid=${fid}&packId=${packId}`, {
+      const apiBaseUrl = getApiBaseUrl();
+      const response = await fetch(`${apiBaseUrl}/api/starter-packs?fid=${fid}&packId=${packId}`, {
         method: 'DELETE',
       });
       

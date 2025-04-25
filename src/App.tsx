@@ -1,15 +1,16 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { sdk } from '@farcaster/frame-sdk';
 import Header from './components/Header';
 import Home from './pages/Home';
 import PackDetail from './pages/PackDetail';
+import { initializeFrame } from './services/frame';
 import './App.css';
 
 function App() {
   useEffect(() => {
-    // Hide splash screen when app is ready
-    sdk.actions.ready();
+    // Initialize the Frame SDK and get user FID
+    // This also hides the splash screen by calling sdk.actions.ready()
+    initializeFrame();
   }, []);
 
   return (
