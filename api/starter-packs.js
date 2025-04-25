@@ -1,11 +1,10 @@
 // api/starter-packs.js
 // This will be deployed as a Vercel serverless function
-import { createClient } from '@vercel/kv';
+import { createEdgeConfigClient } from '@vercel/edge-config';
 
-// Create KV client from environment variables
-const kv = createClient({
-  url: process.env.KV_REST_API_URL,
-  token: process.env.KV_REST_API_TOKEN,
+// Create Edge Config client from environment variables
+const edgeConfig = createEdgeConfigClient({
+  connectionString: process.env.EDGE_CONFIG,
 });
 
 export default async function handler(req, res) {
@@ -30,9 +29,15 @@ export default async function handler(req, res) {
 
     // Handle different HTTP methods
     if (req.method === 'GET') {
-      // Get starter packs for this user
-      const packs = await kv.get(`user:${fid}:packs`);
-      return res.status(200).json(packs || []);
+      try {
+        // Get starter packs for this user
+        const packs = await edgeConfig.get(`user:${fid}:packs`);
+        return res.status(200).json(packs || []);
+      } catch (error) {
+        // If the key doesn't exist yet, return an empty array
+        console.log('Edge Config get error (likely key not found):', error);
+        return res.status(200).json([]);
+      }
     } 
     else if (req.method === 'POST') {
       // Add a new starter pack
@@ -43,12 +48,18 @@ export default async function handler(req, res) {
       }
       
       // Get existing packs
-      let packs = await kv.get(`user:${fid}:packs`) || [];
+      let packs = [];
+      try {
+        packs = await edgeConfig.get(`user:${fid}:packs`) || [];
+      } catch (error) {
+        // If the key doesn't exist yet, start with an empty array
+        console.log('Edge Config get error (likely key not found):', error);
+      }
       
       // Check if pack already exists
       if (!packs.find(p => p.id === pack.id)) {
         packs.push(pack);
-        await kv.set(`user:${fid}:packs`, packs);
+        await edgeConfig.set(`user:${fid}:packs`, packs);
       }
       
       return res.status(200).json({ success: true, packs });
@@ -62,11 +73,17 @@ export default async function handler(req, res) {
       }
       
       // Get existing packs
-      let packs = await kv.get(`user:${fid}:packs`) || [];
+      let packs = [];
+      try {
+        packs = await edgeConfig.get(`user:${fid}:packs`) || [];
+      } catch (error) {
+        // If the key doesn't exist yet, start with an empty array
+        console.log('Edge Config get error (likely key not found):', error);
+      }
       
       // Filter out the pack to remove
       packs = packs.filter(p => p.id !== packId);
-      await kv.set(`user:${fid}:packs`, packs);
+      await edgeConfig.set(`user:${fid}:packs`, packs);
       
       return res.status(200).json({ success: true, packs });
     }
