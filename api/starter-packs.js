@@ -1,6 +1,12 @@
 // api/starter-packs.js
 // This will be deployed as a Vercel serverless function
-import { kv } from '@vercel/kv';
+import { createClient } from '@vercel/kv';
+
+// Create KV client from environment variables
+const kv = createClient({
+  url: process.env.KV_REST_API_URL,
+  token: process.env.KV_REST_API_TOKEN,
+});
 
 export default async function handler(req, res) {
   try {
