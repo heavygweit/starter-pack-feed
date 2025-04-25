@@ -1,0 +1,96 @@
+# Warpcast API Reference
+
+This is a reference file for the Warpcast API based on documentation from https://docs.farcaster.xyz/reference/warpcast/api
+
+## Base URL
+- Hostname: `https://api.warpcast.com`
+
+## Authentication
+- Uses self-signed tokens as App Keys for a specific Farcaster ID (FID)
+- Requires generating an encoded header, payload, and signature
+- Token expires after 5 minutes
+
+## Pagination
+- Paginated endpoints return a `next.cursor` property
+- Optional `limit` query parameter to specify page size
+- Use `cursor` parameter to fetch subsequent pages
+
+## Key Endpoints Categories
+
+### Channels
+1. Get All Channels
+   - `GET /v2/all-channels`
+   - Returns comprehensive channel details
+   - No authentication required
+
+2. Channel Followers
+   - `GET /v1/channel-followers`
+   - List channel followers
+   - Ordered by follow time, descending
+
+3. Channel Management
+   - Follow/Unfollow Channels
+   - Invite/Remove Users
+   - Moderate Channel Casts
+   - Ban/Unban Users
+
+### User-Related Endpoints
+1. Account Verifications
+2. Blocked Users
+3. Primary Addresses
+4. Starter Pack Members
+
+### Discovery Endpoints
+1. Farcaster Actions
+2. Composer Actions
+3. Creator/Developer Rewards
+
+### Moderation Endpoints
+1. Get Cast Moderation Actions
+2. Channel Restricted Users
+3. Channel Banned Users
+
+## Starter Pack Endpoints
+1. Get Starter Packs
+   - `GET /v2/starterpacks`
+   - Returns list of starter packs
+
+2. Get Starter Pack by ID
+   - `GET /v2/starterpacks/{id}`
+   - Returns detailed information about a specific starter pack
+
+3. Get User by FID
+   - `GET /v2/user-by-fid?fid={fid}`
+   - Returns user information by Farcaster ID
+
+## Authentication Example
+```typescript
+const authToken = generateAuthToken(fid, privateKey, publicKey);
+```
+
+## API Headers
+```
+headers: {
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${authToken}`
+}
+```
+
+## Response Format
+Most endpoints return JSON responses with this structure:
+```json
+{
+  "result": {
+    // Endpoint-specific data
+  },
+  "next": {
+    "cursor": "string" // Optional, for pagination
+  }
+}
+```
+
+## Rate Limits
+- API has rate limits (refer to documentation for current limits)
+- Headers return remaining rate limit information
+
+Note: This API is subject to change. Always refer to the official documentation for the most up-to-date information: https://docs.farcaster.xyz/reference/warpcast/api

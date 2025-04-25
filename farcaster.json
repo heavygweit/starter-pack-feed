@@ -1,0 +1,12 @@
+{
+  "frame": {
+    "version": "1",
+    "name": "Starter Pack Explorer",
+    "iconUrl": "https://yourdomain.com/icon.png",
+    "homeUrl": "https://yourdomain.com/",
+    "imageUrl": "https://yourdomain.com/cover.png",
+    "buttonTitle": "Explore Packs",
+    "splashImageUrl": "https://yourdomain.com/splash.png",
+    "splashBackgroundColor": "#5c6bc0"
+  }
+}
