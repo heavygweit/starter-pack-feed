@@ -1,11 +1,21 @@
 // api/starter-packs.js
 // This will be deployed as a Vercel serverless function
-import { createEdgeConfigClient } from '@vercel/edge-config';
+import { createClient } from '@vercel/edge-config';
 
 // Create Edge Config client from environment variables
-const edgeConfig = createEdgeConfigClient({
-  connectionString: process.env.EDGE_CONFIG,
-});
+// Initialize as null to handle missing config gracefully
+let edgeConfig = null;
+try {
+  if (process.env.EDGE_CONFIG) {
+    edgeConfig = createClient({
+      connectionString: process.env.EDGE_CONFIG,
+    });
+  } else {
+    console.warn('EDGE_CONFIG environment variable is missing, API will return empty arrays');
+  }
+} catch (error) {
+  console.error('Failed to create Edge Config client:', error);
+}
 
 export default async function handler(req, res) {
   // Set CORS headers
@@ -16,6 +26,13 @@ export default async function handler(req, res) {
   // Handle OPTIONS requests for CORS preflight
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
+  }
+  
+  // Check if Edge Config is properly configured
+  if (!edgeConfig) {
+    console.error('Edge Config client is not available');
+    // Return empty array instead of error to allow app to fallback to localStorage
+    return res.status(200).json([]);
   }
   
   try {
