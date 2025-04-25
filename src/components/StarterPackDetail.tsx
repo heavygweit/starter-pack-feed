@@ -64,7 +64,7 @@ const StarterPackDetail = () => {
 
       <h2>Members</h2>
       {pack.members && pack.members.length > 0 ? (
-        <UserList userIds={pack.members.map(member => member.fid)} />
+        <UserList userIds={pack.members.map((member: { fid: number }) => member.fid)} />
       ) : (
         <div>No members in this pack</div>
       )}

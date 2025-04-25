@@ -1,25 +1,8 @@
 // src/services/api.ts
 import { getUserFid, waitForFrameInit, isFrameInitialized } from './frame';
+import { StarterPack, User, FeedRequest, FeedResponse } from './types';
 
-// Types
-export interface StarterPack {
-  id: string;
-  url: string;
-  name?: string;
-  creator?: string;
-  description?: string;
-  members?: Array<{ fid: number }>;
-}
-
-export interface User {
-  fid: number;
-  username: string;
-  displayName: string;
-  pfp: { url: string };
-  bio?: string;
-  followerCount?: number;
-  followingCount?: number;
-}
+export type { StarterPack, User };
 
 // Extract starter pack ID from a Warpcast URL
 export const extractPackIdFromUrl = (url: string): string | null => {
@@ -285,5 +268,44 @@ export const isPackSaved = async (packId: string) => {
   } catch (error) {
     console.error(`Failed to check if pack ${packId} is saved:`, error);
     return false;
+  }
+};
+
+// Fetch feed data from a list of FIDs
+export const fetchFeed = async (
+  fids: number[], 
+  limit: number = 20, 
+  sort: 'latest' | 'trending' | 'popular' = 'latest',
+  showReplies: boolean = false
+): Promise<FeedResponse> => {
+  try {
+    if (!fids || fids.length === 0) {
+      throw new Error('No FIDs provided for feed');
+    }
+
+    const payload: FeedRequest = {
+      fids,
+      limit,
+      sort,
+      showReplies
+    };
+
+    const response = await fetch('https://auth.uno.fun/api/v2/feed', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Feed API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch feed:', error);
+    throw error;
   }
 };
