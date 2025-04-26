@@ -5,11 +5,15 @@ import { getSavedPacks, StarterPack } from '../services/api';
 const StarterPackList: React.FC = () => {
   const [savedPacks, setSavedPacks] = useState<StarterPack[]>([]);
   const [loading, setLoading] = useState(true);
+  const [storageMode, setStorageMode] = useState<'cross-device' | 'device-only'>('device-only');
+  const [storageMessage, setStorageMessage] = useState<string>('');
 
   const loadSavedPacks = async () => {
     try {
-      const packs = await getSavedPacks();
-      setSavedPacks(packs);
+      const data = await getSavedPacks();
+      setSavedPacks(data.packs);
+      setStorageMode(data.storageMode);
+      setStorageMessage(data.message);
     } catch (error) {
       console.error('Error loading saved packs:', error);
     } finally {
@@ -42,6 +46,15 @@ const StarterPackList: React.FC = () => {
   return (
     <div className="starter-pack-list">
       <h2>Your Saved Starter Packs</h2>
+      
+      {/* Storage mode indicator */}
+      <div className={`storage-mode-indicator ${storageMode}`}>
+        <span className="storage-icon">
+          {storageMode === 'cross-device' ? '🔄' : '📱'}
+        </span>
+        <span className="storage-message">{storageMessage}</span>
+      </div>
+      
       {savedPacks.map(pack => (
         <StarterPackCard 
           key={pack.id} 

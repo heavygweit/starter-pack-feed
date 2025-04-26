@@ -131,8 +131,15 @@ const getApiBaseUrl = () => {
   return '';
 };
 
+// Storage mode information
+export interface StorageInfo {
+  packs: StarterPack[];
+  storageMode: 'cross-device' | 'device-only';
+  message: string;
+}
+
 // Fetch saved packs from the API
-export const getSavedPacks = async () => {
+export const getSavedPacks = async (): Promise<StorageInfo> => {
   try {
     // Get user FID
     const fid = await getCurrentUserFid();
@@ -141,7 +148,13 @@ export const getSavedPacks = async () => {
       console.warn('No FID available, using localStorage fallback');
       // Fallback to localStorage if no FID
       const saved = localStorage.getItem(SAVED_PACKS_KEY);
-      return saved ? JSON.parse(saved) : [];
+      const packs = saved ? JSON.parse(saved) : [];
+      
+      return {
+        packs,
+        storageMode: 'device-only',
+        message: 'Your packs are only saved on this device'
+      };
     }
     
     // Try to fetch from the API
@@ -153,17 +166,38 @@ export const getSavedPacks = async () => {
         throw new Error(`API error: ${response.status}`);
       }
       
-      const packs = await response.json();
-      return packs || [];
+      const data = await response.json();
+      
+      // New API format with storageMode information
+      if (data && typeof data === 'object' && 'packs' in data) {
+        return data as StorageInfo;
+      }
+      
+      // Legacy API format (just an array)
+      return {
+        packs: Array.isArray(data) ? data : [],
+        storageMode: 'device-only',
+        message: 'Your packs are only saved on this device'
+      };
     } catch (apiError) {
       console.error('Failed to fetch from API, using localStorage fallback:', apiError);
       // Fallback to localStorage if API fails
       const saved = localStorage.getItem(SAVED_PACKS_KEY);
-      return saved ? JSON.parse(saved) : [];
+      const packs = saved ? JSON.parse(saved) : [];
+      
+      return {
+        packs,
+        storageMode: 'device-only',
+        message: 'Your packs are only saved on this device'
+      };
     }
   } catch (error) {
     console.error('Failed to get saved packs:', error);
-    return [];
+    return {
+      packs: [],
+      storageMode: 'device-only',
+      message: 'Your packs are only saved on this device'
+    };
   }
 };
 
@@ -175,7 +209,8 @@ export const saveStarterPack = async (packInfo: { id: string, url: string, name?
     if (!fid) {
       console.warn('No FID available, using localStorage fallback');
       // Fallback to localStorage if no FID
-      const savedPacks = await getSavedPacks();
+      const storageInfo = await getSavedPacks();
+      const savedPacks = storageInfo.packs;
       
       // Check if already saved
       if (!savedPacks.find((p: StarterPack) => p.id === packInfo.id)) {
@@ -205,7 +240,8 @@ export const saveStarterPack = async (packInfo: { id: string, url: string, name?
     } catch (apiError) {
       console.error('Failed to save to API, using localStorage fallback:', apiError);
       // Fallback to localStorage if API fails
-      const savedPacks = await getSavedPacks();
+      const storageInfo = await getSavedPacks();
+      const savedPacks = storageInfo.packs;
       
       // Check if already saved
       if (!savedPacks.find((p: StarterPack) => p.id === packInfo.id)) {
@@ -229,7 +265,8 @@ export const removeStarterPack = async (packId: string) => {
     if (!fid) {
       console.warn('No FID available, using localStorage fallback');
       // Fallback to localStorage if no FID
-      const savedPacks = await getSavedPacks();
+      const storageInfo = await getSavedPacks();
+      const savedPacks = storageInfo.packs;
       const updatedPacks = savedPacks.filter((p: StarterPack) => p.id !== packId);
       localStorage.setItem(SAVED_PACKS_KEY, JSON.stringify(updatedPacks));
       return true;
@@ -250,7 +287,8 @@ export const removeStarterPack = async (packId: string) => {
     } catch (apiError) {
       console.error('Failed to remove from API, using localStorage fallback:', apiError);
       // Fallback to localStorage if API fails
-      const savedPacks = await getSavedPacks();
+      const storageInfo = await getSavedPacks();
+      const savedPacks = storageInfo.packs;
       const updatedPacks = savedPacks.filter((p: StarterPack) => p.id !== packId);
       localStorage.setItem(SAVED_PACKS_KEY, JSON.stringify(updatedPacks));
       return true;
@@ -263,8 +301,8 @@ export const removeStarterPack = async (packId: string) => {
 
 export const isPackSaved = async (packId: string) => {
   try {
-    const savedPacks = await getSavedPacks();
-    return savedPacks.some((p: StarterPack) => p.id === packId);
+    const storageInfo = await getSavedPacks();
+    return storageInfo.packs.some((p: StarterPack) => p.id === packId);
   } catch (error) {
     console.error(`Failed to check if pack ${packId} is saved:`, error);
     return false;

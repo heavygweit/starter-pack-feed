@@ -2,16 +2,61 @@
 // This will be deployed as a Vercel serverless function
 import { createClient } from '@vercel/edge-config';
 
+// Create a simple in-memory storage for fallback
+const inMemoryStorage = new Map();
+
+// Helper functions for storage operations
+const getStoredPacks = async (fid, useEdgeConfig = true) => {
+  // Try Edge Config first if available and requested
+  if (edgeConfig && useEdgeConfig) {
+    try {
+      const packs = await edgeConfig.get(`user:${fid}:packs`);
+      console.log(`Retrieved packs for user ${fid} from Edge Config:`, packs ? packs.length : 0);
+      return packs || [];
+    } catch (error) {
+      console.error(`Failed to get packs from Edge Config for user ${fid}:`, error);
+      // Fall back to in-memory storage
+    }
+  }
+  
+  // Use in-memory storage as fallback
+  return inMemoryStorage.get(`user:${fid}:packs`) || [];
+};
+
+const storeUserPacks = async (fid, packs) => {
+  // Try Edge Config first if available
+  if (edgeConfig) {
+    try {
+      await edgeConfig.set(`user:${fid}:packs`, packs);
+      console.log(`Stored ${packs.length} packs for user ${fid} in Edge Config`);
+      return true;
+    } catch (error) {
+      console.error(`Failed to store packs in Edge Config for user ${fid}:`, error);
+      // Fall back to in-memory storage
+    }
+  }
+  
+  // Use in-memory storage as fallback
+  inMemoryStorage.set(`user:${fid}:packs`, packs);
+  console.log(`Stored ${packs.length} packs for user ${fid} in memory`);
+  return true;
+};
+
 // Create Edge Config client from environment variables
 // Initialize as null to handle missing config gracefully
 let edgeConfig = null;
 try {
   if (process.env.EDGE_CONFIG) {
+    console.log('Creating Edge Config client with connection string:', 
+                process.env.EDGE_CONFIG.substring(0, 10) + '...[redacted]');
+    
     edgeConfig = createClient({
       connectionString: process.env.EDGE_CONFIG,
     });
+    
+    console.log('Edge Config client created successfully');
   } else {
-    console.warn('EDGE_CONFIG environment variable is missing, API will return empty arrays');
+    console.warn('EDGE_CONFIG environment variable is missing, will use in-memory storage');
   }
 } catch (error) {
   console.error('Failed to create Edge Config client:', error);
@@ -28,11 +73,11 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
   
-  // Check if Edge Config is properly configured
+  // Log if Edge Config is not available
   if (!edgeConfig) {
-    console.error('Edge Config client is not available');
-    // Return empty array instead of error to allow app to fallback to localStorage
-    return res.status(200).json([]);
+    console.error('Edge Config client is not available, will use in-memory storage');
+    // We'll continue with an in-memory store for this session
+    // This allows the API to work without Edge Config, but data won't persist between API invocations
   }
   
   try {
@@ -47,39 +92,71 @@ export default async function handler(req, res) {
     // Handle different HTTP methods
     if (req.method === 'GET') {
       try {
-        // Get starter packs for this user
-        const packs = await edgeConfig.get(`user:${fid}:packs`);
-        return res.status(200).json(packs || []);
+        // Get starter packs for this user using our helper function
+        const packs = await getStoredPacks(fid);
+        
+        // Indicate whether cross-device storage is available
+        return res.status(200).json({
+          packs,
+          storageMode: edgeConfig ? 'cross-device' : 'device-only',
+          message: edgeConfig 
+            ? 'Your packs are saved across all your devices' 
+            : 'Your packs are only saved on this device'
+        });
       } catch (error) {
-        // If the key doesn't exist yet, return an empty array
-        console.log('Edge Config get error (likely key not found):', error);
-        return res.status(200).json([]);
+        console.error('Error getting packs:', error);
+        return res.status(200).json({
+          packs: [],
+          storageMode: 'device-only',
+          message: 'Your packs are only saved on this device'
+        });
       }
     } 
     else if (req.method === 'POST') {
       // Add a new starter pack
-      const pack = req.body;
+      let pack;
+      
+      try {
+        // Ensure we have a valid JSON body
+        pack = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+        console.log('Received pack data:', pack);
+      } catch (e) {
+        console.error('Failed to parse request body:', e, req.body);
+        return res.status(400).json({ error: 'Invalid JSON data' });
+      }
       
       if (!pack || !pack.id || !pack.url) {
-        return res.status(400).json({ error: 'Invalid pack data' });
+        console.error('Missing required pack fields:', pack);
+        return res.status(400).json({ error: 'Invalid pack data - missing id or url' });
       }
       
       // Get existing packs
-      let packs = [];
-      try {
-        packs = await edgeConfig.get(`user:${fid}:packs`) || [];
-      } catch (error) {
-        // If the key doesn't exist yet, start with an empty array
-        console.log('Edge Config get error (likely key not found):', error);
-      }
+      let packs = await getStoredPacks(fid);
       
       // Check if pack already exists
       if (!packs.find(p => p.id === pack.id)) {
+        // Add the new pack
         packs.push(pack);
-        await edgeConfig.set(`user:${fid}:packs`, packs);
+        
+        // Store the updated packs list
+        const success = await storeUserPacks(fid, packs);
+        if (!success) {
+          return res.status(500).json({ error: 'Failed to save pack' });
+        }
+        
+        console.log(`Successfully saved pack ${pack.id} for user ${fid}`);
+      } else {
+        console.log(`Pack ${pack.id} already exists for user ${fid}`);
       }
       
-      return res.status(200).json({ success: true, packs });
+      return res.status(200).json({ 
+        success: true, 
+        packs,
+        storageMode: edgeConfig ? 'cross-device' : 'device-only',
+        message: edgeConfig 
+          ? 'Your packs are saved across all your devices' 
+          : 'Your packs are only saved on this device'
+      });
     } 
     else if (req.method === 'DELETE') {
       // Remove a starter pack
@@ -90,19 +167,32 @@ export default async function handler(req, res) {
       }
       
       // Get existing packs
-      let packs = [];
-      try {
-        packs = await edgeConfig.get(`user:${fid}:packs`) || [];
-      } catch (error) {
-        // If the key doesn't exist yet, start with an empty array
-        console.log('Edge Config get error (likely key not found):', error);
+      let packs = await getStoredPacks(fid);
+      
+      // Check if pack exists
+      if (!packs.some(p => p.id === packId)) {
+        return res.status(404).json({ error: 'Pack not found' });
       }
       
       // Filter out the pack to remove
       packs = packs.filter(p => p.id !== packId);
-      await edgeConfig.set(`user:${fid}:packs`, packs);
       
-      return res.status(200).json({ success: true, packs });
+      // Store the updated packs list
+      const success = await storeUserPacks(fid, packs);
+      if (!success) {
+        return res.status(500).json({ error: 'Failed to remove pack' });
+      }
+      
+      console.log(`Successfully removed pack ${packId} for user ${fid}`);
+      
+      return res.status(200).json({ 
+        success: true, 
+        packs,
+        storageMode: edgeConfig ? 'cross-device' : 'device-only',
+        message: edgeConfig 
+          ? 'Your packs are saved across all your devices' 
+          : 'Your packs are only saved on this device'
+      });
     }
     
     // Method not allowed

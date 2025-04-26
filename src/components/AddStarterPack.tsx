@@ -16,15 +16,7 @@ const AddStarterPack: React.FC<AddStarterPackProps> = ({ onPackAdded }) => {
     setUrl(newUrl);
     setError(null);
     setSuccess(null);
-    
-    // Auto-save when a URL is pasted
-    if (newUrl.includes('warpcast.com') && newUrl.includes('/pack/')) {
-      // Detect paste event by checking if the URL suddenly changed to a complete URL
-      if (newUrl.length > url.length + 10) {
-        // This looks like a paste event with a complete URL
-        handleSavePack(newUrl);
-      }
-    }
+    // Removed auto-save functionality
   };
 
   // Extracted the save pack logic to a separate function
@@ -95,20 +87,7 @@ const AddStarterPack: React.FC<AddStarterPackProps> = ({ onPackAdded }) => {
             type="text"
             value={url}
             onChange={handleUrlChange}
-            onPaste={(e) => {
-              // Get pasted text from clipboard
-              const pastedText = e.clipboardData.getData('text');
-              if (pastedText.includes('warpcast.com') && pastedText.includes('/pack/')) {
-                // This is a paste event with a valid-looking URL
-                // We'll let handleUrlChange handle it when the input value updates
-                setTimeout(() => {
-                  // Small delay to ensure the input value is updated
-                  if (!isAdding) {
-                    handleSavePack(pastedText);
-                  }
-                }, 100);
-              }
-            }}
+            // Removed onPaste auto-save handler
             placeholder="Paste Warpcast starter pack URL"
             disabled={isAdding}
           />

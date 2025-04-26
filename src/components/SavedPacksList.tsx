@@ -7,13 +7,17 @@ const SavedPacksList = () => {
   const [savedPacks, setSavedPacks] = useState<StarterPack[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [storageMode, setStorageMode] = useState<'cross-device' | 'device-only'>('device-only');
+  const [storageMessage, setStorageMessage] = useState<string>('');
 
   useEffect(() => {
     const fetchPacks = async () => {
       try {
         setLoading(true);
-        const packs = await getSavedPacks();
-        setSavedPacks(packs);
+        const data = await getSavedPacks();
+        setSavedPacks(data.packs);
+        setStorageMode(data.storageMode);
+        setStorageMessage(data.message);
       } catch (err) {
         console.error('Error loading saved packs:', err);
         setError('Failed to load saved packs');
@@ -46,8 +50,10 @@ const SavedPacksList = () => {
   const handleRemovePack = async () => {
     // Refresh the list after removing a pack
     try {
-      const packs = await getSavedPacks();
-      setSavedPacks(packs);
+      const data = await getSavedPacks();
+      setSavedPacks(data.packs);
+      setStorageMode(data.storageMode);
+      setStorageMessage(data.message);
     } catch (err) {
       console.error('Error refreshing packs:', err);
     }
@@ -56,6 +62,15 @@ const SavedPacksList = () => {
   return (
     <div className="saved-packs">
       <h2>Your Saved Starter Packs</h2>
+      
+      {/* Storage mode indicator */}
+      <div className={`storage-mode-indicator ${storageMode}`}>
+        <span className="storage-icon">
+          {storageMode === 'cross-device' ? '🔄' : '📱'}
+        </span>
+        <span className="storage-message">{storageMessage}</span>
+      </div>
+      
       {savedPacks.map(pack => (
         <StarterPackCard 
           key={pack.id} 
