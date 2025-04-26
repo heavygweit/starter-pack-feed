@@ -192,6 +192,9 @@ export interface FeedRequest {
 }
 
 export interface FeedResponse {
-  casts: Cast[];
-  nextCursor?: string;
+  success: boolean;
+  data: {
+    items: Cast[];
+    nextCursor?: string;
+  };
 }

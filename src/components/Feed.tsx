@@ -35,8 +35,8 @@ const Feed: React.FC<FeedProps> = ({
         // Fetch feed data
         const feedData = await fetchFeed(fids, limit, sort, showReplies);
         
-        if (feedData && feedData.casts) {
-          setCasts(feedData.casts);
+        if (feedData && feedData.success && feedData.data && feedData.data.items) {
+          setCasts(feedData.data.items);
         } else {
           throw new Error('Invalid feed data received');
         }
