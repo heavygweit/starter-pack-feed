@@ -22,10 +22,13 @@ export const extractPackIdFromUrl = (url: string): string | null => {
   }
 };
 
-// Fetch starter pack data from the public API
+// Fetch starter pack data from the public API through our proxy
 export const fetchStarterPackData = async (packId: string) => {
   try {
-    const response = await fetch(`https://api.warpcast.com/fc/starter-pack-members?id=${packId}`);
+    const apiBaseUrl = getApiBaseUrl();
+    // Use our proxy endpoint to avoid CORS issues
+    const encodedUrl = encodeURIComponent(`https://api.warpcast.com/fc/starter-pack-members?id=${packId}`);
+    const response = await fetch(`${apiBaseUrl}/api/proxy?url=${encodedUrl}`);
     
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
@@ -38,10 +41,13 @@ export const fetchStarterPackData = async (packId: string) => {
   }
 };
 
-// Fetch user profile data
+// Fetch user profile data through our proxy
 export const fetchUserProfile = async (username: string) => {
   try {
-    const response = await fetch(`https://api.warpcast.com/fc/user/${username}`);
+    const apiBaseUrl = getApiBaseUrl();
+    // Use our proxy endpoint to avoid CORS issues
+    const encodedUrl = encodeURIComponent(`https://api.warpcast.com/fc/user/${username}`);
+    const response = await fetch(`${apiBaseUrl}/api/proxy?url=${encodedUrl}`);
     
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
@@ -309,7 +315,7 @@ export const isPackSaved = async (packId: string) => {
   }
 };
 
-// Fetch feed data from a list of FIDs
+// Fetch feed data from a list of FIDs through our proxy
 export const fetchFeed = async (
   fids: number[], 
   limit: number = 20, 
@@ -328,7 +334,11 @@ export const fetchFeed = async (
       showReplies
     };
 
-    const response = await fetch('https://auth.uno.fun/api/v2/feed', {
+    const apiBaseUrl = getApiBaseUrl();
+    // Use our proxy endpoint to avoid CORS issues
+    const encodedUrl = encodeURIComponent('https://auth.uno.fun/api/v2/feed');
+    
+    const response = await fetch(`${apiBaseUrl}/api/proxy?url=${encodedUrl}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
