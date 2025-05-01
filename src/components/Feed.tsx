@@ -19,7 +19,6 @@ const Feed: React.FC<FeedProps> = ({
   const [casts, setCasts] = useState<Cast[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isPreview, setIsPreview] = useState(isPreviewModeEnabled());
 
   useEffect(() => {
     console.log("Feed component - isPreviewModeEnabled:", isPreviewModeEnabled());
@@ -36,8 +35,7 @@ const Feed: React.FC<FeedProps> = ({
         setLoading(true);
         setError(null);
         const isPreviewMode = isPreviewModeEnabled();
-        console.log("Feed component - setting isPreview to:", isPreviewMode);
-        setIsPreview(isPreviewMode);
+        console.log("Feed component - preview mode:", isPreviewMode);
 
         // If we're on the preview page, directly load the local data
         if (window.location.pathname === '/preview') {

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Feed from '../components/Feed';
-import { isPreviewModeEnabled, setPreviewMode } from '../services/api';
+import { setPreviewMode } from '../services/api';
 
 // Immediately set preview mode to true before component renders
 console.log("PreviewFeed - Directly setting preview mode to true on module load");
@@ -9,8 +9,8 @@ setPreviewMode(true);
 
 const PreviewFeed: React.FC = () => {
   const navigate = useNavigate();
-  const [sortBy, setSortBy] = useState<'latest' | 'trending' | 'popular'>('latest');
-  const [showReplies, setShowReplies] = useState(false);
+  const [sortBy] = useState<'latest' | 'trending' | 'popular'>('latest');
+  const [showReplies] = useState(false);
 
 
   const handleBackClick = () => {
