@@ -72,7 +72,7 @@ const PackDetail: React.FC = () => {
   const memberCount = fids.length;
 
   return (
-    <div className="bg-white rounded-lg p-6 shadow">
+    <div>
       <div className="flex items-center mb-6">
         <button
           className="bg-transparent border-none text-indigo-600 text-sm cursor-pointer px-2 py-1 mr-4 hover:text-indigo-800"
@@ -84,35 +84,11 @@ const PackDetail: React.FC = () => {
       </div>
 
       <div className="mt-4 pt-4 border-t border-gray-200">
-        <p className="text-gray-700 mb-4">{packDescription}</p>
         <div className="text-sm text-gray-500">
           {memberCount} members
         </div>
       </div>
 
-      {/* Feed Controls */}
-      <div className="my-5 flex gap-4">
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as 'latest' | 'trending' | 'popular')}
-          className="px-3 py-2 rounded border border-gray-300"
-        >
-          <option value="latest">Latest</option>
-          <option value="trending">Trending</option>
-          <option value="popular">Popular</option>
-        </select>
-
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="show-replies"
-            checked={showReplies}
-            onChange={(e) => setShowReplies(e.target.checked)}
-            className="rounded"
-          />
-          <label htmlFor="show-replies" className="text-sm">Show replies</label>
-        </div>
-      </div>
 
       {/* Display the feed */}
       {fids.length > 0 ? (

@@ -20,12 +20,12 @@ const Home: React.FC = () => {
     <div className="flex flex-col gap-6">
       <div className="flex justify-between items-center">
         <AddStarterPack onPackAdded={handlePackAdded} />
-        <button 
+        {/* <button 
           onClick={handleNavigateToPreview}
           className="px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-purple-600 text-white hover:bg-purple-700"
         >
           Preview Feed
-        </button>
+        </button> */}
       </div>
       <StarterPackList key={refreshKey} />
     </div>
