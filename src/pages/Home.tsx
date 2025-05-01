@@ -1,20 +1,20 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import StarterPackList from '../components/StarterPackList';
 import AddStarterPack from '../components/AddStarterPack';
 
 const Home: React.FC = () => {
   const [refreshKey, setRefreshKey] = useState(0);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const handlePackAdded = () => {
     // Trigger a refresh of the starter pack list
     setRefreshKey(prev => prev + 1);
   };
 
-  const handleNavigateToPreview = () => {
-    navigate('/preview-feed');
-  };
+  // const handleNavigateToPreview = () => {
+  //   navigate('/preview-feed');
+  // };
 
   return (
     <div className="flex flex-col gap-6">

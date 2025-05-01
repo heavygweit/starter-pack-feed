@@ -9,8 +9,6 @@ const PackDetail: React.FC = () => {
   const [packData, setPackData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<'latest' | 'trending' | 'popular'>('latest');
-  const [showReplies, setShowReplies] = useState(false);
 
   useEffect(() => {
     if (!id) {
@@ -68,7 +66,6 @@ const PackDetail: React.FC = () => {
 
   const fids = getFids();
   const packName = packData.result?.starterpack?.name || `Starter Pack: ${id}`;
-  const packDescription = packData.result?.starterpack?.description || 'A collection of profiles to follow';
   const memberCount = fids.length;
 
   return (
@@ -94,8 +91,6 @@ const PackDetail: React.FC = () => {
       {fids.length > 0 ? (
         <Feed
           fids={fids}
-          sort={sortBy}
-          showReplies={showReplies}
           limit={20}
         />
       ) : (
