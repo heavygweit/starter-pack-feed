@@ -44,20 +44,24 @@ const PackDetail: React.FC = () => {
     if (!packData || !packData.result || !packData.result.members) {
       return [];
     }
-    
+
     return packData.result.members.map((member: { fid: number }) => member.fid);
   };
 
   if (loading) {
-    return <div className="loading">Loading starter pack data...</div>;
+    return <div className="text-center py-8 text-black dark:text-white">Loading starter pack data...</div>;
   }
 
   if (error || !packData) {
     return (
-      <div className="error-container">
-        <h2>Error</h2>
-        <p>{error || 'Failed to load starter pack'}</p>
-        <button onClick={handleBackClick}>Back to Home</button>
+      <div className="text-center mt-4">
+        <p className="text-stone-500 dark:text-stone-400 mb-6">{error || 'Failed to load starter pack'}</p>
+        <button
+          className="bg-stone-950 text-white dark:bg-stone-50 dark:text-stone-950 px-4 py-2 rounded text-sm"
+          onClick={handleBackClick}
+        >
+          Back to Home
+        </button>
       </div>
     );
   }
@@ -68,53 +72,58 @@ const PackDetail: React.FC = () => {
   const memberCount = fids.length;
 
   return (
-    <div className="pack-detail-page">
-      <div className="pack-header">
-        <button className="back-button" onClick={handleBackClick}>
+    <div className="bg-white rounded-lg p-6 shadow">
+      <div className="flex items-center mb-6">
+        <button
+          className="bg-transparent border-none text-indigo-600 text-sm cursor-pointer px-2 py-1 mr-4 hover:text-indigo-800"
+          onClick={handleBackClick}
+        >
           ← Back
         </button>
-        <h1>{packName}</h1>
+        <h1 className="text-xl font-bold">{packName}</h1>
       </div>
 
-      <div className="pack-info">
-        <p>{packDescription}</p>
-        <div className="member-count">
+      <div className="mt-4 pt-4 border-t border-gray-200">
+        <p className="text-gray-700 mb-4">{packDescription}</p>
+        <div className="text-sm text-gray-500">
           {memberCount} members
         </div>
       </div>
 
       {/* Feed Controls */}
-      <div className="feed-controls">
-        <select 
-          value={sortBy} 
+      <div className="my-5 flex gap-4">
+        <select
+          value={sortBy}
           onChange={(e) => setSortBy(e.target.value as 'latest' | 'trending' | 'popular')}
+          className="px-3 py-2 rounded border border-gray-300"
         >
           <option value="latest">Latest</option>
           <option value="trending">Trending</option>
           <option value="popular">Popular</option>
         </select>
-        
-        <div className="toggle">
-          <input 
-            type="checkbox" 
-            id="show-replies" 
-            checked={showReplies} 
+
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="show-replies"
+            checked={showReplies}
             onChange={(e) => setShowReplies(e.target.checked)}
+            className="rounded"
           />
-          <label htmlFor="show-replies">Show replies</label>
+          <label htmlFor="show-replies" className="text-sm">Show replies</label>
         </div>
       </div>
 
       {/* Display the feed */}
       {fids.length > 0 ? (
-        <Feed 
-          fids={fids} 
+        <Feed
+          fids={fids}
           sort={sortBy}
           showReplies={showReplies}
           limit={20}
         />
       ) : (
-        <div className="empty-feed">This starter pack has no members</div>
+        <div className="text-center py-8 text-stone-500 dark:text-stone-400">This starter pack has no members</div>
       )}
     </div>
   );

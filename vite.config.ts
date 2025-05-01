@@ -1,26 +1,17 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import cors from "@fastify/cors";
 
 // https://vitejs.dev/config/
 export default defineConfig({
 	plugins: [react()],
 	server: {
 		cors: true,
-		hmr: {
-			// Allow CORS for HMR through cloudflare tunnel
-			clientPort: 443,
-			host: "benjamin-folding-evident-content.trycloudflare.com",
-		},
 		watch: {
-			// Use polling for file changes to make HMR work better with cloudflare tunnel
-			usePolling: true,
+			usePolling: false,
 		},
 		strictPort: true, // Don't try another port if 5173 is in use
 		allowedHosts: [
-			"localhost",
-			"prominent-avenue-needs-assuming.trycloudflare.com",
-			".trycloudflare.com",
+			"localhost"
 		],
 		proxy: {
 			"/api": {

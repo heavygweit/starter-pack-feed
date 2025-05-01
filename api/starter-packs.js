@@ -100,15 +100,15 @@ export default async function handler(req, res) {
           packs,
           storageMode: edgeConfig ? 'cross-device' : 'device-only',
           message: edgeConfig 
-            ? 'Your packs are saved across all your devices' 
-            : 'Your packs are only saved on this device'
+            ? 'Your saved packs will be accessible across all devices' 
+            : 'Your saved packs will only be accessible on this device/browser'
         });
       } catch (error) {
         console.error('Error getting packs:', error);
         return res.status(200).json({
           packs: [],
           storageMode: 'device-only',
-          message: 'Your packs are only saved on this device'
+          message: 'Your saved packs will only be accessible on this device/browser'
         });
       }
     } 
@@ -154,8 +154,8 @@ export default async function handler(req, res) {
         packs,
         storageMode: edgeConfig ? 'cross-device' : 'device-only',
         message: edgeConfig 
-          ? 'Your packs are saved across all your devices' 
-          : 'Your packs are only saved on this device'
+          ? 'Your saved packs will be available across all devices' 
+          : 'Your saved packs will only be accessible on this device/browser'
       });
     } 
     else if (req.method === 'DELETE') {
@@ -190,8 +190,8 @@ export default async function handler(req, res) {
         packs,
         storageMode: edgeConfig ? 'cross-device' : 'device-only',
         message: edgeConfig 
-          ? 'Your packs are saved across all your devices' 
-          : 'Your packs are only saved on this device'
+          ? 'Your saved packs will be available across all devices' 
+          : 'Your saved packs will only be accessible on this device/browser'
       });
     }
     

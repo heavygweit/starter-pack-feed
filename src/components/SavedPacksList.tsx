@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { getSavedPacks, StarterPack } from '../services/api';
+import { getSavedPacks, type StarterPack } from '../services/api';
 import StarterPackCard from './StarterPackCard';
 
 const SavedPacksList = () => {
   const [savedPacks, setSavedPacks] = useState<StarterPack[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [storageMode, setStorageMode] = useState<'cross-device' | 'device-only'>('device-only');
-  const [storageMessage, setStorageMessage] = useState<string>('');
 
   useEffect(() => {
     const fetchPacks = async () => {
@@ -16,8 +13,6 @@ const SavedPacksList = () => {
         setLoading(true);
         const data = await getSavedPacks();
         setSavedPacks(data.packs);
-        setStorageMode(data.storageMode);
-        setStorageMessage(data.message);
       } catch (err) {
         console.error('Error loading saved packs:', err);
         setError('Failed to load saved packs');
@@ -41,8 +36,7 @@ const SavedPacksList = () => {
     return (
       <div className="saved-packs-empty">
         <h2>No Saved Starter Packs</h2>
-        <p>Start saving packs to see them here!</p>
-        <Link to="/">Browse Starter Packs</Link>
+        <p>Start adding packs to see them here!</p>
       </div>
     );
   }
@@ -52,8 +46,6 @@ const SavedPacksList = () => {
     try {
       const data = await getSavedPacks();
       setSavedPacks(data.packs);
-      setStorageMode(data.storageMode);
-      setStorageMessage(data.message);
     } catch (err) {
       console.error('Error refreshing packs:', err);
     }
@@ -61,21 +53,21 @@ const SavedPacksList = () => {
 
   return (
     <div className="saved-packs">
-      <h2>Your Saved Starter Packs</h2>
-      
-      {/* Storage mode indicator */}
-      <div className={`storage-mode-indicator ${storageMode}`}>
-        <span className="storage-icon">
+      <h2>Your Starter Packs</h2>
+
+      {/* Storage mode indicator
+      <div className={"border-stone-200 dark:border-stone-800 text-black dark:text-white"}>
+        <span>
           {storageMode === 'cross-device' ? '🔄' : '📱'}
         </span>
         <span className="storage-message">{storageMessage}</span>
-      </div>
-      
+      </div> */}
+
       {savedPacks.map(pack => (
-        <StarterPackCard 
-          key={pack.id} 
-          pack={pack} 
-          onRemove={handleRemovePack} 
+        <StarterPackCard
+          key={pack.id}
+          pack={pack}
+          onRemove={handleRemovePack}
         />
       ))}
     </div>

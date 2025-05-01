@@ -37,7 +37,7 @@ const AddStarterPack: React.FC<AddStarterPackProps> = ({ onPackAdded }) => {
     try {
       // Extract the pack ID from the URL
       const packId = extractPackIdFromUrl(packUrl);
-      
+
       if (!packId) {
         setError('Could not extract starter pack ID from URL');
         setIsAdding(false);
@@ -79,28 +79,29 @@ const AddStarterPack: React.FC<AddStarterPackProps> = ({ onPackAdded }) => {
   };
 
   return (
-    <div className="add-starter-pack">
-      <h2>Add a Starter Pack</h2>
+    <div className="flex flex-col items-center">
+      <h2 className="text-black text-xl font-semibold align-middle mb-4 dark:text-white">Add a Starter Pack</h2>
       <form onSubmit={handleSubmit}>
-        <div className="input-group">
+        <div className="flex gap-2 items-center justify-center">
           <input
             type="text"
             value={url}
             onChange={handleUrlChange}
-            // Removed onPaste auto-save handler
-            placeholder="Paste Warpcast starter pack URL"
+            placeholder="Paste starter pack URL"
             disabled={isAdding}
+            className="flex-1 px-3 h-9 border border-stone-200 rounded text-sm dark:border-stone-800"
           />
-          <button type="submit" disabled={isAdding}>
+          <button
+            type="submit"
+            disabled={isAdding}
+            className="bg-stone-950 dark:bg-stone-50 text-white dark:text-stone-950 px-5 h-9 rounded font-medium disabled:bg-stone-500 disabled:cursor-not-allowed"
+          >
             {isAdding ? 'Adding...' : 'Add'}
           </button>
         </div>
-        {error && <div className="error-message">{error}</div>}
-        {success && <div className="success-message">{success}</div>}
+        {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
+        {success && <div className="text-green-600 text-sm mt-2">{success}</div>}
       </form>
-      <div className="sample-url">
-        <small>Example: https://warpcast.com/erica/pack/gaycoinz-db07ti</small>
-      </div>
     </div>
   );
 };
